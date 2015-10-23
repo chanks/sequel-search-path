@@ -49,16 +49,16 @@ module Sequel
     end
     alias :show_search_path :get_search_path
 
-    private
-
-    def schemas_key
-      @schemas_key ||= "sequel-search-path-#{object_id}".to_sym
-    end
-
     def set_search_path
       placeholders = schemas.map{'?'}.join(', ')
       placeholders = "''" if placeholders.empty?
       self["SET search_path TO #{placeholders}", *schemas].get
+    end
+
+    private
+
+    def schemas_key
+      @schemas_key ||= "sequel-search-path-#{object_id}".to_sym
     end
   end
 
