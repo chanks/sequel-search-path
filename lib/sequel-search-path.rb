@@ -1,1 +1,1 @@
-require 'sequel/search_path'
+require 'sequel/extensions/search_path'
