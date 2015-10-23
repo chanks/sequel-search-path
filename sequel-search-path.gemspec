@@ -9,7 +9,7 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Chris Hanks"]
   spec.email         = ['christopher.m.hanks@gmail.com']
 
-  spec.summary       = %q{TODO: Write a short summary, because Rubygems requires one.}
+  spec.summary       = %q{Easy scoping of Postgres' search_path for Sequel}
   spec.homepage      = 'https://github.com/chanks/sequel-search-path'
   spec.license       = "MIT"
 
