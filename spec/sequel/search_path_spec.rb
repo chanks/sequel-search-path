@@ -443,4 +443,22 @@ class SearchPathSpec < Minitest::Spec
       assert_schemas :public
     end
   end
+
+  it "should ignore failed transaction errors when setting schemas directly" do
+    error = assert_raises Sequel::DatabaseError do
+      assert_schemas :public
+      DB.transaction do
+        begin
+          DB.schemas = [:schema1]
+          assert_schemas :schema1
+          DB[:nonexistent_table].all
+        ensure
+          DB.schemas = [:public]
+        end
+      end
+      assert_schemas :public
+    end
+
+    assert_match /relation "nonexistent_table" does not exist/, error.message
+  end
 end
