@@ -47,12 +47,16 @@ module Sequel
       placeholders = schemas.map{'?'}.join(', ')
       placeholders = "''" if placeholders.empty?
       self["SET search_path TO #{placeholders}", *schemas].get
-    rescue Sequel::DatabaseError
-      # This command will fail if we're in a transaction that the DB is
-      # rolling back due to an error, but in that case, there's no need to run
-      # it anyway (Postgres will reset the search_path for us). Since there's
-      # no way to know whether it will fail until we try it, and there's
-      # nothing to be done with the error it throws, just ignore it.
+    rescue Sequel::DatabaseError => e
+      if e.wrapped_exception.is_a?(PG::InFailedSqlTransaction)
+        # This command will fail if we're in a transaction that the DB is
+        # rolling back due to an error, but in that case, there's no need to run
+        # it anyway (Postgres will reset the search_path for us). Since there's
+        # no way to know whether it will fail until we try it, and there's
+        # nothing to be done with the error it throws, just ignore it.
+      else
+        raise
+      end
     end
 
     def schemas_key
