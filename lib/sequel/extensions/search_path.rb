@@ -36,10 +36,10 @@ module Sequel
       schemas.first
     end
 
-    def get_search_path
+    def search_path
       self["SHOW search_path"].get
     end
-    alias :show_search_path :get_search_path
+    alias :show_search_path :search_path
 
     private
 

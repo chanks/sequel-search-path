@@ -8,7 +8,7 @@ class SearchPathSpec < Minitest::Spec
   def assert_schemas(*schemas)
     assert_equal schemas.first,      DB.active_schema
     assert_equal schemas,            DB.schemas
-    assert_equal schemas.join(', '), DB.get_search_path
+    assert_equal schemas.join(', '), DB.search_path
   end
 
   before do
@@ -83,14 +83,14 @@ class SearchPathSpec < Minitest::Spec
           # sure that things don't fail because of it.
           DB.override_schema do
             assert_equal [],   DB.schemas
-            assert_equal '""', DB.get_search_path
+            assert_equal '""', DB.search_path
 
             DB.use_schema :schema4 do
               assert_schemas :schema4
             end
 
             assert_equal [],   DB.schemas
-            assert_equal '""', DB.get_search_path
+            assert_equal '""', DB.search_path
           end
         end
 
