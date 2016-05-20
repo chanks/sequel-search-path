@@ -28,7 +28,13 @@ module Sequel
     def schemas=(schemas)
       schemas = schemas.map(&:to_sym).uniq
       Thread.current[schemas_key] = schemas
-      set_search_path(schemas)
+
+      # Set the search_path in Postgres, unless it's in transaction rollback.
+      # If it is, the search_path will be reset for us anyway, and the SQL
+      # call will just raise another error.
+      unless synchronize(&:transaction_status) == PG::PQTRANS_INERROR
+        set_search_path(schemas)
+      end
     end
 
     # The schema that new objects will be created in.
@@ -47,16 +53,6 @@ module Sequel
       placeholders = schemas.map{'?'}.join(', ')
       placeholders = "''" if placeholders.empty?
       self["SET search_path TO #{placeholders}", *schemas].get
-    rescue Sequel::DatabaseError => e
-      if e.wrapped_exception.is_a?(PG::InFailedSqlTransaction)
-        # This command will fail if we're in a transaction that the DB is
-        # rolling back due to an error, but in that case, there's no need to run
-        # it anyway (Postgres will reset the search_path for us). Since there's
-        # no way to know whether it will fail until we try it, and there's
-        # nothing to be done with the error it throws, just ignore it.
-      else
-        raise
-      end
     end
 
     def schemas_key
