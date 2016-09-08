@@ -25,15 +25,18 @@ module Sequel
       Thread.current[schemas_key] ||= [:public]
     end
 
-    def schemas=(schemas)
-      schemas = schemas.map(&:to_sym).uniq
-      Thread.current[schemas_key] = schemas
+    def schemas=(new_schemas)
+      new_schemas = new_schemas.map(&:to_sym).uniq
+
+      return if schemas == new_schemas
+
+      Thread.current[schemas_key] = new_schemas
 
       # Set the search_path in Postgres, unless it's in transaction rollback.
       # If it is, the search_path will be reset for us anyway, and the SQL
       # call will just raise another error.
       unless synchronize(&:transaction_status) == PG::PQTRANS_INERROR
-        set_search_path(schemas)
+        set_search_path(new_schemas)
       end
     end
 
