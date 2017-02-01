@@ -50,6 +50,11 @@ module Sequel
     end
     alias :show_search_path :search_path
 
+    def freeze
+      schemas_key
+      super
+    end
+
     private
 
     def set_search_path(schemas)

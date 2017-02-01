@@ -11,3 +11,5 @@ require 'sequel'
 DB = Sequel.connect("postgres:///sequel-search-path-test", search_path: 'public')
 
 DB.extension :search_path
+
+DB.freeze
