@@ -19,6 +19,29 @@ class SearchPathSpec < Minitest::Spec
     assert_schemas :public
   end
 
+  describe "when defaulting the schemas setting" do
+    def assert_default(expected:, search_path:)
+      DB.synchronize do |conn|
+        conn.async_exec "SET search_path TO #{search_path}"
+
+        key = DB.send(:schemas_key)
+        Thread.current[key] = nil
+        schemas = DB.schemas
+        conn.async_exec "SET search_path TO public"
+        Thread.current[key] = nil
+
+        assert_equal expected, schemas
+      end
+    end
+
+    it "should use whatever the search_path is" do
+      assert_default expected: [:public], search_path: "public"
+      assert_default expected: [:public, :schema1], search_path: "public, schema1"
+      assert_default expected: [:schema2, :public, :schema1], search_path: "schema2,   public, schema1"
+      assert_default expected: [:public], search_path: '"$user", public'
+    end
+  end
+
   it "should change the search_path inside the block" do
     DB.use_schema :schema1 do
       assert_schemas :schema1, :public

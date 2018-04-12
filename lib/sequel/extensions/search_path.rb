@@ -22,7 +22,7 @@ module Sequel
     end
 
     def schemas
-      Thread.current[schemas_key] ||= [:public]
+      Thread.current[schemas_key] ||= parse_search_path
     end
 
     def schemas=(new_schemas)
@@ -56,6 +56,14 @@ module Sequel
     end
 
     private
+
+    def parse_search_path
+      search_path.
+        split(/[\s,]+/).
+        map{|s| s.gsub(/\A"|"\z/, '')}.
+        reject{|s| s == '$user'}.
+        map(&:to_sym)
+    end
 
     def set_search_path(schemas)
       placeholders = schemas.map{'?'}.join(', ')
